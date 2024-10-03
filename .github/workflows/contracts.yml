@@ -1,0 +1,53 @@
+name: Lint specifications and check Backward Compatibility
+
+ on:
+   push:
+     branches: [ "main" ]
+   pull_request:
+     branches: [ "main" ]
+ jobs:
+   run-lint:
+     runs-on: ubuntu-latest
+     steps:
+       - name: Checkout code
+         uses: actions/checkout@v4
+         with:
+           fetch-depth: 0
+
+       - name: Set up Node.js
+         uses: actions/setup-node@v2
+         with:
+           node-version: '14'
+
+       - name: Install OpenAPI linter
+         run: npm install -g @stoplight/spectral-cli
+
+       - name: Lint OpenAPI specs
+         run: spectral lint **/*.yaml
+
+       - name: Run OpenAPI Backward Compatibility Check using Specmatic
+         run: |
+           docker run --rm \
+           -v "${{ github.workspace }}:/api-contracts:rw" \
+           -w /api-contracts \
+           --entrypoint /bin/sh \
+           znsio/specmatic \
+           -c "git config --global --add safe.directory /api-contracts && java -jar /usr/src/app/specmatic.jar backwardCompatibilityCheck"
+          
+       - name: Generate central contract repo report
+         run: |
+           docker run -v "$(pwd):/central-contract-repo:rw" \
+             --entrypoint /bin/sh znsio/specmatic \
+             -c "cd /central-contract-repo && java -jar /usr/src/app/specmatic.jar central-contract-repo-report"
+          
+       - name: Run Specmatic Insights Github Build Reporter
+         uses: znsio/specmatic-insights-build-reporter-github-action@v2.0.2
+         with:
+           github-token: ${{ secrets.GH_REPOSITORY_TOKEN }}
+           org-id:  YOUR_SPECMATIC_ORG_ID # Replace with your actual Org ID
+           branch-ref: ${{ github.ref }}
+           branch-name: ${{ github.ref_name }}
+           build-id: ${{ github.run_id }}
+           repo-name: ${{ github.event.repository.name }}
+           repo-id: ${{ github.repository_id }}
+           repo-url: ${{ github.event.repository.html_url }} 
