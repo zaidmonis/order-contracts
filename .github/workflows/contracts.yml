@@ -35,7 +35,7 @@ jobs:
          uses: znsio/specmatic-insights-build-reporter-github-action@v2.0.2
          with:
            github-token: ${{ secrets.GH_REPOSITORY_TOKEN }}
-           org-id:  YOUR_SPECMATIC_ORG_ID # Replace with your actual Org ID
+           org-id:  66fe6c555e232d36a28fef94 # Replace with your actual Org ID
            branch-ref: ${{ github.ref }}
            branch-name: ${{ github.ref_name }}
            build-id: ${{ github.run_id }}
