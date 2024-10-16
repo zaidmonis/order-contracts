@@ -1,0 +1,29 @@
+name: Generate Postman Collection using OpenApi spec
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  run-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install openAPI to Postman Collection converter
+        run: npm i -g openapi-to-postmanv2
+
+      - name: Convert spec file to collection
+        run: openapi2postmanv2 -s orders/order_api.yaml -o collection.json -p -O folderStrategy=Tags,includeAuthInfoInExample=true
+
+      - name: Upload collection file
+        uses: actions/upload-artifact@v4
+        with:
+          path: collection.json
