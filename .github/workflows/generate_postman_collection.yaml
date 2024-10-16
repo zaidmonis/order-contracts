@@ -30,7 +30,7 @@ jobs:
         run: npm i -g openapi-to-postmanv2
 
       - name: Convert spec file to collection
-        run: openapi2postmanv2 -s orders/order_api.yaml -o collection.json -p -O folderStrategy=Tags,includeAuthInfoInExample=true
+        run: openapi2postmanv2 -s orders/order_api.yaml -o collection.json -p -O includeAuthInfoInExample=true
 
       - name: Upload collection file
         uses: actions/upload-artifact@v4
