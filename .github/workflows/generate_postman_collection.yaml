@@ -3,10 +3,11 @@ name: Generate Postman Collection using OpenApi spec
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
+    inputs: none
+
 jobs:
-  run-lint:
+  generate-collection:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
