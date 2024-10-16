@@ -4,8 +4,16 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
-    inputs: none
-
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: false
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
 jobs:
   generate-collection:
     runs-on: ubuntu-latest
