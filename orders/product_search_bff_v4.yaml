@@ -1,0 +1,76 @@
+openapi: 3.0.0
+info:
+  title: Order API
+  version: '1.0'
+servers:
+  - url: http://localhost:8080
+paths:
+  /findAvailableProducts:
+    parameters:
+      - schema:
+         type: string
+        name: type
+        in: query
+        required: false
+      - name: pageSize
+        in: header
+        schema:
+          type: integer
+        required: true
+    get:
+      summary: Fetch product details
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '503':
+          description: Timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+
+components:
+  schemas:
+    Product:
+      title: Product Details
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: integer
+        type:
+          type: string
+        inventory:
+          type: integer
+        description:
+          type: string
+      required:
+        - name
+        - id
+        - type
+        - inventory
+    BadRequest:
+      title: Bad Request
+      type: object
+      properties:
+        timestamp:
+          type: string
+        status:
+          type: number
+        error:
+          type: string
+        message:
+          type: string
