@@ -49,3 +49,10 @@ jobs:
            repo-name: ${{ github.event.repository.name }}
            repo-id: ${{ github.repository_id }}
            repo-url: ${{ github.event.repository.html_url }} 
+       - name: Run OpenAPI Examples validation check
+         if: steps.changed-files-specific.outputs.any_changed == 'true'
+         run: |
+          docker run -v "$(pwd):/central-contract-repo:rw" \
+            --env-file env.list \
+            --entrypoint /bin/sh znsio/specmatic \
+            -c "git config --global --add safe.directory /central-contract-repo && cd /central-contract-repo && java -jar /usr/src/app/specmatic.jar examples validate --contract-file=orders/product_search_bff_v4.yaml"
