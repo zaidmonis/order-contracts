@@ -32,23 +32,6 @@ jobs:
        - name: Lint OpenAPI specs
          run: spectral lint **/*.yaml
 
-       - name: Generate central contract repo report
-         run: |
-           docker run -v "$(pwd):/central-contract-repo:rw" \
-             --entrypoint /bin/sh znsio/specmatic \
-             -c "cd /central-contract-repo && java -jar /usr/src/app/specmatic.jar central-contract-repo-report"
-          
-       - name: Run Specmatic Insights Github Build Reporter
-         uses: znsio/specmatic-insights-build-reporter-github-action@v2.0.2
-         with:
-           github-token: ${{ secrets.GH_REPOSITORY_TOKEN }}
-           org-id:  66fe6c555e232d36a28fef94 # Replace with your actual Org ID
-           branch-ref: ${{ github.ref }}
-           branch-name: ${{ github.ref_name }}
-           build-id: ${{ github.run_id }}
-           repo-name: ${{ github.event.repository.name }}
-           repo-id: ${{ github.repository_id }}
-           repo-url: ${{ github.event.repository.html_url }} 
        - name: Run OpenAPI Examples validation check
          if: steps.changed-files-specific.outputs.any_changed == 'true'
          run: |
