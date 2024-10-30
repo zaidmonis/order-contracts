@@ -1,6 +1,8 @@
 name: Lint specifications and check Backward Compatibility
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
     inputs:
       logLevel:

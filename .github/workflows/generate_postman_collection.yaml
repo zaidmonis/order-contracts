@@ -1,8 +1,6 @@
 name: Generate Postman Collection using OpenApi spec
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
     inputs:
       logLevel:
