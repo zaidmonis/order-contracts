@@ -28,14 +28,25 @@ jobs:
          with:
            node-version: '14'
 
-       - name: Install docker
-         uses: papodaca/install-docker-action@main
-
        - name: Install OpenAPI linter
          run: npm install -g @stoplight/spectral-cli
 
        - name: Lint OpenAPI specs
          run: spectral lint **/*.yaml
+
+       - name: Create environment file
+         run: |
+           # echo "GITHUB_REF=${{ github.ref }}" >> env.list
+           echo "GITHUB_SHA=${{ github.sha }}" >> env.list
+           echo "GITHUB_REPOSITORY=${{ github.repository }}" >> env.list
+           echo "GITHUB_ACTOR=${{ github.actor }}" >> env.list
+           echo "GITHUB_WORKFLOW=${{ github.workflow }}" >> env.list
+           echo "GITHUB_HEAD_REF=${{ github.head_ref }}" >> env.list
+           if [ -z "${{ github.base_ref }}" ]; then
+               echo "GITHUB_BASE_REF=${{ github.ref }}" | sed 's/refs\/heads\///' >> env.list
+           else
+             echo "GITHUB_BASE_REF=${{ github.base_ref }}" >> env.list
+           fi
 
        - name: Run OpenAPI Examples validation check
          run: |
