@@ -35,7 +35,6 @@ jobs:
          run: spectral lint **/*.yaml
 
        - name: Run OpenAPI Examples validation check
-         if: steps.changed-files-specific.outputs.any_changed == 'true'
          run: |
           docker run -v "$(pwd):/central-contract-repo:rw" \
             --env-file env.list \
