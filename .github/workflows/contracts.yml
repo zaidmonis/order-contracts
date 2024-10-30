@@ -50,4 +50,4 @@ jobs:
 
        - name: Run OpenAPI Examples validation check
          run: |
-          docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic examples validate --contract-file=orders/product_search_bff_v4.yaml"
+          docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic examples validate --contract-file=orders/product_search_bff_v4.yaml
