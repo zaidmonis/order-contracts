@@ -14,57 +14,51 @@ on:
           - info
           - warning
           - debug
-
 jobs:
-  run-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch full history to access all branches
+   run-lint:
+     runs-on: ubuntu-latest
+     steps:
+       - name: Checkout code
+         uses: actions/checkout@v4
+         with:
+           fetch-depth: 0
 
-      - name: Set up Git
-        run: |
-          # Ensure the 'origin' remote is set correctly
-          git remote set-url origin https://github.com/${{ github.repository }}.git
-          git fetch origin main # Fetch the latest changes from 'main'
+       - name: Set up Git
+         run: |
+           git fetch origin main
+           git branch --set-upstream-to=origin/main main
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '14'
+       - name: Set up Node.js
+         uses: actions/setup-node@v3
+         with:
+           node-version: '14'
 
-      - name: Install OpenAPI linter
-        run: npm install -g @stoplight/spectral-cli
+       - name: Install OpenAPI linter
+         run: npm install -g @stoplight/spectral-cli
 
-      - name: Lint OpenAPI specs
-        run: spectral lint **/*.yaml
+       - name: Lint OpenAPI specs
+         run: spectral lint **/*.yaml
 
-      - name: Create environment file
-        run: |
-          echo "GITHUB_SHA=${{ github.sha }}" >> env.list
-          echo "GITHUB_REPOSITORY=${{ github.repository }}" >> env.list
-          echo "GITHUB_ACTOR=${{ github.actor }}" >> env.list
-          echo "GITHUB_WORKFLOW=${{ github.workflow }}" >> env.list
-          echo "GITHUB_HEAD_REF=${{ github.head_ref }}" >> env.list
-          if [ -z "${{ github.base_ref }}" ]; then
-              echo "GITHUB_BASE_REF=${{ github.ref }}" | sed 's/refs\/heads\///' >> env.list
-          else
-              echo "GITHUB_BASE_REF=${{ github.base_ref }}" >> env.list
-          fi
+       - name: Create environment file
+         run: |
+           # echo "GITHUB_REF=${{ github.ref }}" >> env.list
+           echo "GITHUB_SHA=${{ github.sha }}" >> env.list
+           echo "GITHUB_REPOSITORY=${{ github.repository }}" >> env.list
+           echo "GITHUB_ACTOR=${{ github.actor }}" >> env.list
+           echo "GITHUB_WORKFLOW=${{ github.workflow }}" >> env.list
+           echo "GITHUB_HEAD_REF=${{ github.head_ref }}" >> env.list
+           if [ -z "${{ github.base_ref }}" ]; then
+               echo "GITHUB_BASE_REF=${{ github.ref }}" | sed 's/refs\/heads\///' >> env.list
+           else
+             echo "GITHUB_BASE_REF=${{ github.base_ref }}" >> env.list
+           fi
 
-      - name: Check Git Repo
-        run: |
-          echo "Checking for .git directory..."
-          ls -la .git || echo ".git directory not found"
+       - name: Run OpenAPI Examples validation check
+         run: |
+           docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic examples validate \
+           --contract-file /central-contract-repo/orders/product_search_bff_v4.yaml
 
-      - name: Run OpenAPI Examples validation check
-        run: |
-          docker run -v "${{ github.workspace }}:/central-contract-repo:rw" znsio/specmatic examples validate \
-          --contract-file /central-contract-repo/orders/product_search_bff_v4.yaml
-
-      - name: Run OpenAPI backward compatibility check
-        run: |
-          docker run -v "${{ github.workspace }}:/central-contract-repo:rw" znsio/specmatic backward-compatibility-check \
-          --base-branch main # Specify the branch name directly
+       - name: Run OpenAPI backward compatibility check
+         run: |
+           docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic backward-compatibility-check \
+           --base-branch origin/main
