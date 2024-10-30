@@ -28,6 +28,9 @@ jobs:
          with:
            node-version: '14'
 
+       - name: Install docker
+         uses: papodaca/install-docker-action@main
+
        - name: Install OpenAPI linter
          run: npm install -g @stoplight/spectral-cli
 
