@@ -52,3 +52,8 @@ jobs:
          run: |
            docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic examples validate \
            --contract-file /central-contract-repo/orders/product_search_bff_v4.yaml
+
+       - name: Run OpenAPI backward compatibility check
+         run: |
+           docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic backward-compatibility-check \
+           --base-branch origin/main
