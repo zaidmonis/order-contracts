@@ -25,7 +25,9 @@ jobs:
 
        - name: Set up Git
          run: |
-           git remote add origin https://github.com/znsio/specmatic-order-bff-java
+           if ! git remote -v | grep -q 'origin'; then
+           git remote add origin https://github.com/<your_user>/<your_repo>.git
+           fi
            git fetch origin main
 
        - name: Set up Node.js
