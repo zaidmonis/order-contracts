@@ -1,66 +1,70 @@
-name: Lint specifications and check Backward Compatibility
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'
-        required: false
-        default: 'warning'
-        type: choice
-        options:
-          - info
-          - warning
-          - debug
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
-   run-lint:
-     runs-on: ubuntu-latest
-     steps:
-       - name: Checkout code
-         uses: actions/checkout@v4
-         with:
-           fetch-depth: 0
+  build:
+    runs-on: ubuntu-latest
+    name: Check API Contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
-       - name: Set up Git
-         run: |
-           git fetch origin main
-           git branch --set-upstream-to=origin/main main
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '20'
 
-       - name: Set up Node.js
-         uses: actions/setup-node@v3
-         with:
-           node-version: '14'
+      - name: Get changed yaml files
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v34
+        with:
+          files: |
+            io/**/*.yaml
+            io/**/*.yml
+            io/**/*.json
+          files_ignore: kafka.yaml #skipping it as async is under private-beta
 
-       - name: Install OpenAPI linter
-         run: npm install -g @stoplight/spectral-cli
+      - name: Install Spectral Linter
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        run: npm install -g @stoplight/spectral-cli
 
-       - name: Lint OpenAPI specs
-         run: spectral lint **/*.yaml
+      - name: Run Spectral linter on changed files
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        run: |
+          echo "Running Spectral linter on: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
+          spectral lint io/**/*.yaml
 
-       - name: Create environment file
-         run: |
-           # echo "GITHUB_REF=${{ github.ref }}" >> env.list
-           echo "GITHUB_SHA=${{ github.sha }}" >> env.list
-           echo "GITHUB_REPOSITORY=${{ github.repository }}" >> env.list
-           echo "GITHUB_ACTOR=${{ github.actor }}" >> env.list
-           echo "GITHUB_WORKFLOW=${{ github.workflow }}" >> env.list
-           echo "GITHUB_HEAD_REF=${{ github.head_ref }}" >> env.list
-           if [ -z "${{ github.base_ref }}" ]; then
-               echo "GITHUB_BASE_REF=${{ github.ref }}" | sed 's/refs\/heads\///' >> env.list
-           else
-             echo "GITHUB_BASE_REF=${{ github.base_ref }}" >> env.list
-           fi
+      - name: Create environment file
+        run: |
+          # echo "GITHUB_REF=${{ github.ref }}" >> env.list
+          echo "GITHUB_SHA=${{ github.sha }}" >> env.list
+          echo "GITHUB_REPOSITORY=${{ github.repository }}" >> env.list
+          echo "GITHUB_ACTOR=${{ github.actor }}" >> env.list
+          echo "GITHUB_WORKFLOW=${{ github.workflow }}" >> env.list
+          echo "GITHUB_HEAD_REF=${{ github.head_ref }}" >> env.list
+          if [ -z "${{ github.base_ref }}" ]; then
+              echo "GITHUB_BASE_REF=${{ github.ref }}" | sed 's/refs\/heads\///' >> env.list
+          else
+            echo "GITHUB_BASE_REF=${{ github.base_ref }}" >> env.list
+          fi     
 
-       - name: Run OpenAPI Examples validation check
-         run: |
-           docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic examples validate \
-           --contract-file /central-contract-repo/orders/product_search_bff_v4.yaml
-
-       - name: Run OpenAPI backward compatibility check
-         run: |
-           docker run -v "$(pwd):/central-contract-repo:rw" \
+      - name: Run OpenAPI backward compatibility check on changed files
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        run: |
+          docker run -v "$(pwd):/central-contract-repo:rw" \
             --env-file env.list \
-            znsio/specmatic \
-            sh -c "git config --global --add safe.directory /central-contract-repo && cd /central-contract-repo && java -jar /usr/src/app/specmatic.jar backward-compatibility-check --base-branch origin/main"
+            --entrypoint /bin/sh znsio/specmatic \
+            -c "git config --global --add safe.directory /central-contract-repo && cd /central-contract-repo && java -jar /usr/src/app/specmatic.jar backward-compatibility-check --base-branch origin/main"
+
+      - name: Run OpenAPI Examples validation check
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        run: |
+          docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic examples validate \
+           --contract-file /central-contract-repo/io/specmatic/examples/store/openapi/product_search_bff_v4.yaml
