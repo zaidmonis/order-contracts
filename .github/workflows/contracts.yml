@@ -43,7 +43,7 @@ jobs:
           spectral lint io/**/*.yaml
 
       - name: Run OpenAPI backward compatibility check on changed files
-        if: steps.changed-files-specific.outputs.any_modified == 'true'
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
           docker run -v "$(pwd):/central-contract-repo:rw" \
             --entrypoint /bin/sh znsio/specmatic \
