@@ -34,7 +34,7 @@ paths:
               examples:
                 GET_PRODUCT:
                   value:
-                    name: "Phone"
+                    name: "XYZ iPhone"
                     type: "gadget"
                     inventory: 10
                     id: 10
