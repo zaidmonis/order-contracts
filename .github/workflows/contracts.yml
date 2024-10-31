@@ -42,6 +42,13 @@ jobs:
           echo "Running Spectral linter on: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
           spectral lint io/**/*.yaml
 
+      - name: new step
+        run: |
+          echo "any changed: ${{steps.changed-files-specific.outputs.any_changed}}"
+          echo "${{steps.changed-files-specific.outputs.all_changed_files}}"
+          echo "any modified: ${{steps.changed-files-specific.outputs.any_modified}}"
+          echo "${{steps.changed-files-specific.outputs.all_modified_files}}"
+
       - name: Run OpenAPI backward compatibility check on changed files
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
