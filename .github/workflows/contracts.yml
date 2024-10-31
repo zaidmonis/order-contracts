@@ -32,7 +32,7 @@ jobs:
             **/*.json
           files_ignore: | 
             kafka.yaml 
-            .github/workflows/*.yml #skipping it as async is under private-beta
+            .github/workflows/*.yml
 
       - name: Install Spectral Linter
         if: steps.changed-files-specific.outputs.any_changed == 'true'
