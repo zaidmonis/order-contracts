@@ -56,7 +56,7 @@ jobs:
           fi     
 
       - name: Run OpenAPI backward compatibility check on changed files
-        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        #if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
           docker run -v "$(pwd):/central-contract-repo:rw" \
             --env-file env.list \
