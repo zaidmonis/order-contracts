@@ -51,7 +51,7 @@ pipeline {
                         }
                     }
         }
-        stage('Run OpenAPI Examples Validation Check') {
+        stage('Run OpenAPI Backward compatibility Check') {
             steps {
                 script {
                     sh '''
