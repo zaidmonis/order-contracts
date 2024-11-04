@@ -13,7 +13,7 @@ pipeline {
                         script {
                             // Run the Specmatic OpenAPI Examples validation check inside a Docker container
                             sh '''
-                                docker run -v "${WORKSPACE}:/central-contract-repo:rw" znsio/specmatic examples validate \
+                                java -jar /usr/src/app/specmatic.jar examples validate \
                                 --contract-file /central-contract-repo/orders/product_search_bff_v4.yaml
                             '''
                         }
