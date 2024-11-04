@@ -1,6 +1,6 @@
 sources:
   - provider: filesystem
     provides:
-      - product_search_bff_v4.yaml
+      - ./orders/product_search_bff_v4.yaml
     consumes:
-      - product_search_bff_v4.yaml
+      - ./orders/product_search_bff_v4.yaml
