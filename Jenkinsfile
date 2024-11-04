@@ -21,7 +21,7 @@ pipeline {
                             // Run the Specmatic OpenAPI Examples validation check inside a Docker container
                             sh '''
                                 java -jar /usr/src/app/specmatic.jar examples validate \
-                                --contract-file /orders/product_search_bff_v4.yaml
+                                --contract-file ./orders/product_search_bff_v4.yaml
                             '''
                         }
                     }
