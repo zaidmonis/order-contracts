@@ -52,7 +52,7 @@ pipeline {
                         }
                     }
         }
-        stage('Run OpenAPI Examples Validation Check') {
+        stage('RGenerate central contract repo report') {
             steps {
                 script {
                     sh '''
