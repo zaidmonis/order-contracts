@@ -23,7 +23,6 @@ pipeline {
                                 sh """
                                 java -jar /usr/src/app/specmatic.jar stub
                                 """
-
                             }
                         }
                     }
@@ -36,7 +35,6 @@ pipeline {
                             java -jar /usr/src/app/specmatic.jar test
                             pkill -f 'java -jar'
                             """
-                            }
                         }
                     }
                 }
