@@ -93,7 +93,7 @@ pipeline {
                     sh """
                     curl -X POST -H "Content-Type: application/json" \
                     -d '${jsonPayload}' \
-                    https://your-specmatic-insights-endpoint.com/report
+                    https://insights.specmatic.io/report
                     """
                 }
             }
