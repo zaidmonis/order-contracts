@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - master
   pull_request:
     branches:
       - main
@@ -29,7 +30,9 @@ jobs:
             **/*.yaml
             **/*.yml
             **/*.json
-          files_ignore: kafka.yaml #skipping it as async is under private-beta
+          files_ignore: |
+            kafka.yaml 
+            .github/workflows/*.yml
 
       - name: Install Spectral Linter
         if: steps.changed-files-specific.outputs.any_changed == 'true'
@@ -41,25 +44,17 @@ jobs:
           echo "Running Spectral linter on: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
           spectral lint io/**/*.yaml
 
-      - name: Create environment file
+      - name: new step
         run: |
-          # echo "GITHUB_REF=${{ github.ref }}" >> env.list
-          echo "GITHUB_SHA=${{ github.sha }}" >> env.list
-          echo "GITHUB_REPOSITORY=${{ github.repository }}" >> env.list
-          echo "GITHUB_ACTOR=${{ github.actor }}" >> env.list
-          echo "GITHUB_WORKFLOW=${{ github.workflow }}" >> env.list
-          echo "GITHUB_HEAD_REF=${{ github.head_ref }}" >> env.list
-          if [ -z "${{ github.base_ref }}" ]; then
-              echo "GITHUB_BASE_REF=${{ github.ref }}" | sed 's/refs\/heads\///' >> env.list
-          else
-            echo "GITHUB_BASE_REF=${{ github.base_ref }}" >> env.list
-          fi     
+          echo "any changed: ${{steps.changed-files-specific.outputs.any_changed}}"
+          echo "${{steps.changed-files-specific.outputs.all_changed_files}}"
+          echo "any modified: ${{steps.changed-files-specific.outputs.any_modified}}"
+          echo "${{steps.changed-files-specific.outputs.all_modified_files}}"
 
       - name: Run OpenAPI backward compatibility check on changed files
-        #if: steps.changed-files-specific.outputs.any_changed == 'true'
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
           docker run -v "$(pwd):/central-contract-repo:rw" \
-            --env-file env.list \
             --entrypoint /bin/sh znsio/specmatic \
             -c "git config --global --add safe.directory /central-contract-repo && cd /central-contract-repo && java -jar /usr/src/app/specmatic.jar backward-compatibility-check --base-branch origin/main"
 
@@ -67,4 +62,22 @@ jobs:
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
           docker run -v "$(pwd):/central-contract-repo:rw" znsio/specmatic examples validate \
-           --contract-file /central-contract-repo/io/specmatic/examples/store/openapi/product_search_bff_v4.yaml
+           --contract-file /central-contract-repo/orders/product_search_bff_v4.yaml
+
+      - name: Generate central contract repo report
+        run: |
+          docker run -v "$(pwd):/central-contract-repo:rw" \
+          --entrypoint /bin/sh znsio/specmatic \
+          -c "cd /central-contract-repo && java -jar /usr/src/app/specmatic.jar central-contract-repo-report"
+
+      - name: Run Specmatic Insights Github Build Reporter
+        uses: znsio/specmatic-insights-build-reporter-github-action@v2.0.2
+        with:
+          github-token: ${{ secrets.GH_REPOSITORY_TOKEN }}
+          org-id: 66fe6c555e232d36a28fef94
+          branch-ref: ${{ github.ref }}
+          branch-name: ${{ github.ref_name }}
+          build-id: ${{ github.run_id }}
+          repo-name: ${{ github.event.repository.name }}
+          repo-id: ${{ github.repository_id }}
+          repo-url: ${{ github.event.repository.html_url }}
