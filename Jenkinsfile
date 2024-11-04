@@ -8,6 +8,18 @@ pipeline {
             }
         }
 
+        stage('Run OpenAPI Examples Validation Check') {
+                    steps {
+                        script {
+                            // Run the Specmatic OpenAPI Examples validation check inside a Docker container
+                            sh '''
+                                docker run -v "${WORKSPACE}:/central-contract-repo:rw" znsio/specmatic examples validate \
+                                --contract-file /central-contract-repo/orders/product_search_bff_v4.yaml
+                            '''
+                        }
+                    }
+        }
+
         stage('Build') {
             steps {
                 echo 'Building...'
@@ -15,6 +27,8 @@ pipeline {
                 // sh './gradlew build'
             }
         }
+
+
 
         stage('Test') {
             steps {
