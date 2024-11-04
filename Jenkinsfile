@@ -51,6 +51,16 @@ pipeline {
                         }
                     }
         }
+        stage('Run OpenAPI Examples Validation Check') {
+            steps {
+                script {
+                    sh '''
+                        java -jar /usr/src/app/specmatic.jar backward-compatibility-check --base-branch origin/main
+                    '''
+                }
+            }
+        }
+
         stage('RGenerate central contract repo report') {
             steps {
                 script {
