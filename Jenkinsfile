@@ -15,33 +15,33 @@ pipeline {
             }
         }
         stage('Run Self Loop Test') {
-                    parallel {
-                        stage('Run Specmatic as Stub') {
-                            steps {
-                                script {
-                                    catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                                        sh """
-                                        java -jar /usr/src/app/specmatic.jar stub
-                                        """
+            parallel {
+                stage('Run Specmatic as Stub') {
+                    steps {
+                        script {
+                            catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                                sh """
+                                java -jar /usr/src/app/specmatic.jar stub
+                                """
 
-                                    }
-                                }
-                            }
-                        }
-                        stage('Run Specmatic test') {
-                            steps {
-                                script {
-                                    sleep 10
-                                    sh """
-                                    java -jar /usr/src/app/specmatic.jar test
-                                    pkill -f 'java -jar'
-                                    """
-                                    }
-                                }
                             }
                         }
                     }
                 }
+                stage('Run Specmatic test') {
+                    steps {
+                        script {
+                            sleep 10
+                            sh """
+                            java -jar /usr/src/app/specmatic.jar test
+                            pkill -f 'java -jar'
+                            """
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Run OpenAPI Examples Validation Check') {
                     steps {
