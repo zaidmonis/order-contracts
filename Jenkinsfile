@@ -7,6 +7,13 @@ pipeline {
                 checkout scm
             }
         }
+        stage('List Files') {
+            steps {
+                script {
+                    sh 'ls -R'  // This will recursively list all files and directories in the workspace
+                }
+            }
+        }
 
         stage('Run OpenAPI Examples Validation Check') {
                     steps {
